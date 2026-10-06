@@ -1,0 +1,38 @@
+{
+  "name": "campusdesk",
+  "version": "1.0.0",
+  "private": true,
+  "description": "A campus support workspace with student requests and a staff service queue.",
+  "type": "module",
+  "engines": {
+    "node": ">=24.0.0"
+  },
+  "scripts": {
+    "dev": "concurrently -k -n API,WEB -c cyan,magenta \"npm:dev:api\" \"npm:dev:web\"",
+    "dev:api": "node --env-file-if-exists=.env --import tsx --watch server/index.ts",
+    "dev:web": "vite --host 127.0.0.1 --strictPort",
+    "build": "tsc -p tsconfig.client.json && tsc -p tsconfig.server.json && vite build",
+    "start": "node --env-file-if-exists=.env dist/server/server/index.js",
+    "create-staff": "node --env-file-if-exists=.env dist/server/server/create-staff.js",
+    "test": "node --import tsx --test tests/api.test.ts",
+    "check": "npm run test && npm run build"
+  },
+  "dependencies": {
+    "express": "^5.2.1",
+    "lucide-react": "^1.52.0",
+    "react": "^19.3.0",
+    "react-dom": "^19.3.0",
+    "zod": "^4.6.5"
+  },
+  "devDependencies": {
+    "@types/express": "^5.0.6",
+    "@types/node": "^26.6.4",
+    "@types/react": "^19.3.0",
+    "@types/react-dom": "^19.3.0",
+    "@vitejs/plugin-react": "^6.1.2",
+    "concurrently": "^10.0.5",
+    "tsx": "^4.23.15",
+    "typescript": "^7.0.2",
+    "vite": "^8.3.2"
+  }
+}
