@@ -114,3 +114,11 @@ Google Fonts are an optional visual enhancement; system fonts are the fallback. 
 ## Explain it in an interview
 
 Demonstrate one student request across both roles, then explain why private-note filtering belongs in the API. Show the stale version test, explain the SQL update guard and transaction, and describe the difference between session authentication, CSRF protection, and ownership authorization. Discuss the single-instance SQLite choice and which changes would be needed for multiple replicas. Describe only the features you have run and understood; this demo does not claim real campus users or service results.
+
+## Screenshots
+
+Captured from the compiled local application with fictional demo data.
+
+![Desktop workspace](docs/screenshots/desktop.jpg)
+
+![Mobile workspace](docs/screenshots/mobile.jpg)
