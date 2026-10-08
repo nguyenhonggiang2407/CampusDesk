@@ -1,3 +1,5 @@
+<img src="public/favicon.svg" alt="CampusDesk campus-and-conversation logo" width="56" height="56" />
+
 # CampusDesk
 
 A campus support application for students and staff. Students submit and follow their own requests; staff use a shared service queue to triage, assign, reply, and resolve them. Public conversations and internal staff notes have different server-enforced visibility.
@@ -109,7 +111,7 @@ The native dialog supports keyboard focus and Escape. Inputs have labels and foc
 
 This version has no email delivery, attachments, real-time events, SSO, password recovery, or staff administration screen. Demo roles represent a small campus team; all staff share the queue and can read internal notes. Read access alone does not notify staff. The data model uses `CREATE TABLE IF NOT EXISTS`; a future schema change needs a versioned migration. SQLite and in-process routing are intended for a small single-instance deployment; scale requirements would justify a separate database and shared limiter. Staff provisioning is a trusted CLI operation.
 
-Google Fonts are an optional visual enhancement; system fonts are the fallback. There is no tracking script. Lucide icons are supplied by the installed open-source package. Application code is licensed under MIT; dependencies retain their own licenses.
+Google Fonts are an optional visual enhancement; system fonts are the fallback. There is no tracking script. Lucide icons are supplied by the installed open-source package. Application code and the original campus-and-conversation SVG logo are licensed under MIT; dependencies retain their own licenses.
 
 ## Explain it in an interview
 
@@ -117,7 +119,7 @@ Demonstrate one student request across both roles, then explain why private-note
 
 ## Screenshots
 
-Captured from the compiled local application with fictional demo data.
+Captured from the compiled local application with fictional demo data after the October 2026 workspace and logo update.
 
 ![Desktop workspace](docs/screenshots/desktop.jpg)
 
