@@ -56,6 +56,33 @@ test('students can submit, search and reply only to their own requests', async t
   assert.equal((await student.request('/tickets?unknown=1')).status, 400);
 });
 
+test('request search treats percent, underscore and backslash literally without widening ownership', async t => {
+  const f = await fixture(t), student = f.client(), other = f.client(), staff = f.client();
+  await student.login(); await other.login('other@campus.example.test'); await staff.login('staff@campus.example.test');
+  const create = async (client: typeof student, title: string, description = requestBody.description) => {
+    const result = await client.request('/tickets', 'POST', { ...requestBody, title, description });
+    assert.equal(result.status, 201); return result.value as TicketDetail;
+  };
+  const percent = await create(student, 'QA 100% Wi-Fi progress');
+  await create(student, 'QA 1000 Wi-Fi progress');
+  const underscore = await create(student, 'QA_1 network access');
+  await create(student, 'QAX1 network access');
+  const path = await create(student, 'QA application log path', 'The application cannot write its fictional log file at C:\\QA\\logs after restarting.');
+  const foreign = await create(other, 'QA 100% Wi-Fi progress');
+  const search = async (client: typeof student, value: string) => {
+    const result = await client.request(`/tickets?search=${encodeURIComponent(value)}`);
+    assert.equal(result.status, 200); return (result.value as TicketPage).tickets.map(ticket => ticket.id);
+  };
+  assert.deepEqual(await search(student, '%'), [percent.id]);
+  assert.deepEqual(await search(student, '100%'), [percent.id]);
+  assert.deepEqual(await search(student, '_'), [underscore.id]);
+  assert.deepEqual(await search(student, 'QA_1'), [underscore.id]);
+  assert.deepEqual(await search(student, '\\'), [path.id]);
+  assert.deepEqual(await search(student, 'C:\\QA\\logs'), [path.id]);
+  assert.deepEqual(await search(student, percent.reference), [percent.id]);
+  assert.deepEqual(new Set(await search(staff, '100%')), new Set([percent.id, foreign.id]));
+});
+
 test('internal notes are excluded from student detail, list and counts', async t => {
   const f = await fixture(t), staff = f.client(), student = f.client();
   await staff.login('staff@campus.example.test'); await student.login();

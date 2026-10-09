@@ -10,6 +10,7 @@ import { categories, priorities, statuses, statusLabels, transitions, type User,
 interface Options { databasePath: string; seedDemo?: boolean; origin: string; secureCookies?: boolean; serveClient?: boolean; }
 class ApiError extends Error { constructor(public status: number, message: string) { super(message); } }
 const digest = (value: string) => createHash('sha256').update(value).digest('hex');
+const searchPattern = (value: string) => '%' + value.replace(/[\\%_]/g, '\\$&') + '%';
 const sessionCookie = 'campus_session';
 const day = () => new Date().toISOString().slice(0, 10);
 const validDate = (value: string) => !Number.isNaN(Date.parse(value)) && new Date(value).toISOString().slice(0, 10) === value;
@@ -136,7 +137,7 @@ export async function createApp(options: Options) {
     if (q.assigned && user.role !== 'staff') throw new ApiError(403, 'Assignment filters are available to staff only.');
     const clauses = ['1=1'], params: (string | number)[] = [];
     if (user.role === 'student') { clauses.push('t.student_id=?'); params.push(user.id); }
-    if (q.search) { clauses.push('(t.title LIKE ? OR t.description LIKE ? OR CAST(t.sequence AS TEXT) LIKE ?)'); params.push(`%${q.search}%`, `%${q.search}%`, `%${q.search.replace(/^CD-/i, '')}%`); }
+    if (q.search) { clauses.push("(t.title LIKE ? ESCAPE '\\' OR t.description LIKE ? ESCAPE '\\' OR CAST(t.sequence AS TEXT) LIKE ? ESCAPE '\\')"); params.push(searchPattern(q.search), searchPattern(q.search), searchPattern(q.search.replace(/^CD-/i, ''))); }
     if (q.status === 'open') clauses.push("t.status NOT IN ('resolved','closed')"); else if (q.status) { clauses.push('t.status=?'); params.push(q.status); }
     if (q.category) { clauses.push('t.category=?'); params.push(q.category); }
     if (q.priority) { clauses.push('t.priority=?'); params.push(q.priority); }
