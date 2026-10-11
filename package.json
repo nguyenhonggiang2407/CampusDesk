@@ -14,7 +14,7 @@
     "build": "tsc -p tsconfig.client.json && tsc -p tsconfig.server.json && vite build",
     "start": "node --env-file-if-exists=.env dist/server/server/index.js",
     "create-staff": "node --env-file-if-exists=.env dist/server/server/create-staff.js",
-    "test": "node --import tsx --test tests/api.test.ts",
+    "test": "node --import tsx --test tests/*.test.ts",
     "check": "npm run test && npm run build"
   },
   "dependencies": {
