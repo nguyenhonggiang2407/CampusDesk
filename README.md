@@ -1,14 +1,31 @@
 # CampusDesk
 
-**Live demo:** [Mở CampusDesk](https://giang-campusdesk.onrender.com). Bản Render Free dùng dữ liệu SQLite tạm; dữ liệu có thể mất sau khi host ngủ hoặc redeploy. Xem [cấu hình hosting](docs/render-free.md).
-
-<img src="public/favicon.svg" width="56" height="56" alt="CampusDesk" />
-
 Ứng dụng tiếp nhận và xử lý yêu cầu hỗ trợ trong trường học.
 Sinh viên gửi yêu cầu và theo dõi phản hồi; nhân viên dùng chung hàng đợi để phân công,
 đổi trạng thái và ghi chú nội bộ.
 
 Dự án dùng React, TypeScript, Express và SQLite. Dữ liệu mẫu là hư cấu.
+
+![Hàng đợi và tổng quan yêu cầu của sinh viên](docs/screenshots/desktop.jpg)
+
+**[Mở bản demo](https://giang-campusdesk.onrender.com)** ·
+[Kiến trúc và dữ liệu](docs/architecture.md) ·
+[Triển khai](docs/deployment.md) ·
+[Kiểm thử tự động](https://github.com/nguyenhonggiang2407/CampusDesk/actions/workflows/ci.yml)
+
+Bản Render Free dùng SQLite tạm; dữ liệu có thể mất sau khi host ngủ hoặc redeploy.
+Chỉ nhập dữ liệu hư cấu. Xem [cấu hình hosting](docs/render-free.md).
+
+## Điểm kỹ thuật
+
+- API phân quyền sinh viên/nhân viên, giới hạn yêu cầu theo chủ sở hữu và lọc cả nội dung lẫn số lượng ghi chú nội bộ.
+- Phiên cookie HttpOnly, token phiên băm SHA-256 trong SQLite, mật khẩu scrypt và CSRF cho thao tác ghi.
+- Cập nhật yêu cầu và hướng dẫn dùng version: bản cũ nhận `409`, thay đổi và lịch sử được ghi trong cùng transaction.
+- Knowledge library có bản nháp/xuất bản/lưu trữ, tìm kiếm tiếng Việt và khóa tạo bài để thử lại an toàn.
+
+Ứng dụng chạy một tiến trình Express phục vụ API và bản build React cùng origin;
+Vite proxy API khi phát triển. Đây là lựa chọn triển khai đơn giản cho demo,
+chưa phải mô hình nhiều replica. [Chi tiết luồng và lược đồ](docs/architecture.md).
 
 ## Thư viện hướng dẫn
 
@@ -145,11 +162,12 @@ Bản có sẵn dữ liệu không tự chèn thêm hướng dẫn mẫu.
 Bản v1.1 vượt qua **28 kiểm thử API/dữ liệu và 7 kiểm thử trình duyệt**, cùng build Docker và
 kiểm tra dữ liệu sau khi khởi động lại container. [Xem lần kiểm tra](https://github.com/nguyenhonggiang2407/CampusDesk/actions/runs/41608553256).
 
-## Hình ảnh
+<details>
+<summary>Tổng quan yêu cầu trên điện thoại</summary>
 
-![Giao diện máy tính](docs/screenshots/desktop.jpg)
+![Giao diện yêu cầu trên điện thoại](docs/screenshots/mobile.jpg)
 
-![Giao diện điện thoại](docs/screenshots/mobile.jpg)
+</details>
 
 ## Giấy phép
 
