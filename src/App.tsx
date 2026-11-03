@@ -368,8 +368,12 @@ function NewRequest({
         <fieldset className="new-request-fields" disabled={busy}>
           <div className="form-grid">
             <label>
-              Service area
-              <select value={category} onChange={(e) => setCategory(e.target.value as Category)}>
+              <span id="request-category-label">Service area</span>
+              <select
+                aria-labelledby="request-category-label"
+                value={category}
+                onChange={(e) => setCategory(e.target.value as Category)}
+              >
                 {categories.map((c) => (
                   <option key={c} value={c}>
                     {categoryLabels[c]}
@@ -378,8 +382,12 @@ function NewRequest({
               </select>
             </label>
             <label>
-              Priority
-              <select value={priority} onChange={(e) => setPriority(e.target.value as Priority)}>
+              <span id="request-priority-label">Priority</span>
+              <select
+                aria-labelledby="request-priority-label"
+                value={priority}
+                onChange={(e) => setPriority(e.target.value as Priority)}
+              >
                 {priorities.map((p) => (
                   <option key={p} value={p}>
                     {p[0].toUpperCase() + p.slice(1)}

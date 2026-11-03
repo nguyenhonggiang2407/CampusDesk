@@ -180,8 +180,9 @@ export function KnowledgeBase({
           </div>
         </label>
         <label>
-          Guide service area
+          <span id="knowledge-filter-category-label">Guide service area</span>
           <select
+            aria-labelledby="knowledge-filter-category-label"
             value={category}
             onChange={(e) => {
               setCategory(e.target.value);
@@ -198,8 +199,9 @@ export function KnowledgeBase({
         </label>
         {staff && (
           <label>
-            Publication state
+            <span id="knowledge-filter-state-label">Publication state</span>
             <select
+              aria-labelledby="knowledge-filter-state-label"
               value={state}
               onChange={(e) => {
                 setState(e.target.value);
@@ -626,8 +628,12 @@ function GuideEditor({
             />
           </label>
           <label>
-            Guide service area
-            <select value={category} onChange={(e) => setCategory(e.target.value as Category)}>
+            <span id="guide-category-label">Guide service area</span>
+            <select
+              aria-labelledby="guide-category-label"
+              value={category}
+              onChange={(e) => setCategory(e.target.value as Category)}
+            >
               {categories.map((value) => (
                 <option value={value} key={value}>
                   {categoryLabels[value]}
