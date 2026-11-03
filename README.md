@@ -125,6 +125,24 @@ Bản có sẵn dữ liệu không tự chèn thêm hướng dẫn mẫu.
 
 Ứng dụng chưa có gửi email, tệp đính kèm, SSO hoặc giao diện quản lý nhân viên.
 
+## Thư viện trên máy tính và điện thoại
+
+![Thư viện hướng dẫn](docs/screenshots/knowledge-desktop.png)
+
+<details>
+<summary>Biên tập của nhân viên và giao diện điện thoại</summary>
+
+![Soạn hướng dẫn](docs/screenshots/guide-editor-desktop.png)
+
+![Thư viện trên điện thoại](docs/screenshots/knowledge-mobile.png)
+
+![Đọc bài trên điện thoại](docs/screenshots/guide-mobile.png)
+
+</details>
+
+Bản v1.1 vượt qua **28 kiểm thử API/dữ liệu và 7 kiểm thử trình duyệt**, cùng build Docker và
+kiểm tra dữ liệu sau khi khởi động lại container. [Xem lần kiểm tra](https://github.com/nguyenhonggiang2407/CampusDesk/actions/runs/41608553256).
+
 ## Hình ảnh
 
 ![Giao diện máy tính](docs/screenshots/desktop.jpg)
