@@ -1,0 +1,16 @@
+services:
+  campusdesk:
+    build: .
+    ports:
+      - '127.0.0.1:3001:3001'
+    environment:
+      NODE_ENV: development
+      HOST: 0.0.0.0
+      APP_ORIGIN: http://127.0.0.1:3001
+      COOKIE_SECURE: '0'
+      DEMO_SEED: '1'
+    volumes:
+      - campusdesk-data:/app/data
+    restart: unless-stopped
+volumes:
+  campusdesk-data:

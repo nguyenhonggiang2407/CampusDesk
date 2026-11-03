@@ -10,7 +10,7 @@ permissions:
 jobs:
   verify:
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 20
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -18,5 +18,37 @@ jobs:
           node-version: 24
           cache: npm
       - run: npm ci
+      - run: npm run format:check
       - run: npm test
       - run: npm run build
+      - run: npx playwright install --with-deps chromium
+      - run: npm run test:browser
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: campusdesk-screenshots
+          path: docs/screenshots/*.png
+          if-no-files-found: warn
+      - name: Verify non-root container and persisted knowledge
+        run: |
+          docker build -t campusdesk-check .
+          docker run -d --name campusdesk-check -e APP_ORIGIN=https://campusdesk.example.test --mount type=volume,src=campusdesk-ci-data,dst=/app/data campusdesk-check
+          for attempt in {1..30}; do
+            if docker exec campusdesk-check node scripts/healthcheck.mjs; then break; fi
+            sleep 1
+          done
+          docker exec campusdesk-check node scripts/healthcheck.mjs
+          docker exec campusdesk-check node --input-type=module -e 'const r = await fetch("http://127.0.0.1:3001"); if (!r.ok || !(await r.text()).includes("CampusDesk")) process.exit(1)'
+          docker exec -i campusdesk-check node --input-type=module - seed < scripts/container-smoke.mjs
+          docker restart campusdesk-check
+          for attempt in {1..30}; do
+            if docker exec campusdesk-check node scripts/healthcheck.mjs; then break; fi
+            sleep 1
+          done
+          docker exec campusdesk-check node scripts/healthcheck.mjs
+          docker exec -i campusdesk-check node --input-type=module - check < scripts/container-smoke.mjs
+      - name: Clean up containers
+        if: always()
+        run: |
+          docker rm -f campusdesk-check || true
+          docker volume rm campusdesk-ci-data || true
