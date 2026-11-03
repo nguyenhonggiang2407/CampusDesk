@@ -1,0 +1,25 @@
+# Public portfolio demo: SQLite is ephemeral on Render Free.
+services:
+  - type: web
+    name: giang-campusdesk
+    runtime: node
+    plan: free
+    region: singapore
+    branch: main
+    autoDeployTrigger: checksPass
+    buildCommand: npm ci --include=dev && npm run build
+    startCommand: 'APP_ORIGIN="${APP_ORIGIN:-$RENDER_EXTERNAL_URL}" npm start'
+    healthCheckPath: /api/health
+    envVars:
+      - key: NODE_VERSION
+        value: '24.22.1'
+      - key: NODE_ENV
+        value: 'production'
+      - key: HOST
+        value: '0.0.0.0'
+      - key: DATABASE_PATH
+        value: '/tmp/campusdesk.sqlite'
+      - key: DEMO_SEED
+        value: '1'
+      - key: COOKIE_SECURE
+        value: '1'
