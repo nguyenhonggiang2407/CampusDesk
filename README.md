@@ -1,6 +1,6 @@
 # CampusDesk
 
-**Hosting demo:** đã có cấu hình Render Free. Xem [cách triển khai và giới hạn dữ liệu tạm](docs/render-free.md). Dữ liệu SQLite có thể mất sau khi host ngủ/restart; chưa có URL demo được xác minh.
+**Live demo:** [Mở CampusDesk](https://giang-campusdesk.onrender.com). Bản Render Free dùng dữ liệu SQLite tạm; dữ liệu có thể mất sau khi host ngủ hoặc redeploy. Xem [cấu hình hosting](docs/render-free.md).
 
 <img src="public/favicon.svg" width="56" height="56" alt="CampusDesk" />
 

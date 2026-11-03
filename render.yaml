@@ -6,9 +6,9 @@ services:
     plan: free
     region: singapore
     branch: main
-    autoDeployTrigger: checksPass
+    autoDeployTrigger: commit
     buildCommand: npm ci --include=dev && npm run build
-    startCommand: 'APP_ORIGIN="${APP_ORIGIN:-$RENDER_EXTERNAL_URL}" npm start'
+    startCommand: 'APP_ORIGIN="${APP_ORIGIN:-$RENDER_EXTERNAL_URL}" exec npm start'
     healthCheckPath: /api/health
     envVars:
       - key: NODE_VERSION
