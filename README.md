@@ -18,10 +18,10 @@ Chỉ nhập dữ liệu hư cấu. Xem [cấu hình hosting](docs/render-free.m
 
 ## Điểm kỹ thuật
 
-- API phân quyền sinh viên/nhân viên, giới hạn yêu cầu theo chủ sở hữu và lọc cả nội dung lẫn số lượng ghi chú nội bộ.
-- Phiên cookie HttpOnly, token phiên băm SHA-256 trong SQLite, mật khẩu scrypt và CSRF cho thao tác ghi.
-- Cập nhật yêu cầu và hướng dẫn dùng version: bản cũ nhận `409`, thay đổi và lịch sử được ghi trong cùng transaction.
-- Knowledge library có bản nháp/xuất bản/lưu trữ, tìm kiếm tiếng Việt và khóa tạo bài để thử lại an toàn.
+- API phân quyền sinh viên/nhân viên, giới hạn yêu cầu theo chủ sở hữu và lọc cả nội dung lẫn số lượng ghi chú nội bộ. [Source](server/app.ts) · [Kiểm thử quyền và luồng yêu cầu](tests/api.test.ts).
+- Phiên cookie HttpOnly, token phiên băm SHA-256 trong SQLite, mật khẩu scrypt và CSRF cho thao tác ghi. [Xử lý phiên/CSRF](server/app.ts) · [Băm mật khẩu](server/password.ts).
+- Cập nhật yêu cầu và hướng dẫn dùng version: bản cũ nhận `409`, thay đổi và lịch sử được ghi trong cùng transaction. [Luồng cập nhật yêu cầu](server/app.ts) · [Kiểm thử API thư viện](tests/knowledge-api.test.ts).
+- Knowledge library có bản nháp/xuất bản/lưu trữ, tìm kiếm tiếng Việt và khóa tạo bài để thử lại an toàn. [Mô tả API](docs/knowledge.md) · [Kiểm thử quyền, thử lại và rollback](tests/knowledge-api.test.ts).
 
 Ứng dụng chạy một tiến trình Express phục vụ API và bản build React cùng origin;
 Vite proxy API khi phát triển. Đây là lựa chọn triển khai đơn giản cho demo,
