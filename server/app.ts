@@ -25,6 +25,7 @@ interface Options {
   origin: string;
   secureCookies?: boolean;
   serveClient?: boolean;
+  passwordVerifier?: typeof verifyPassword;
 }
 const digest = (value: string) => createHash('sha256').update(value).digest('hex');
 const searchPattern = (value: string) => '%' + value.replace(/[\\%_]/g, '\\$&') + '%';
@@ -73,6 +74,7 @@ export async function createApp(options: Options) {
   app.disable('x-powered-by');
   const allowedOrigin = new URL(options.origin).origin;
   const dummyHash = await hashPassword(randomBytes(32).toString('hex'));
+  const checkPassword = options.passwordVerifier ?? verifyPassword;
   const contexts = new WeakMap<Request, { user: User; csrf: string; tokenHash: string }>();
   app.use((req, res, next) => {
     res.set({
@@ -213,22 +215,27 @@ export async function createApp(options: Options) {
     db
       .prepare('INSERT INTO ticket_events(ticket_id,actor_id,message,created_at) VALUES(?,?,?,?)')
       .run(id, actor, message, time);
-  function throttle(scope: string, req: Request, maximum: number, windowMs = 15 * 60_000) {
-    const now = Date.now(),
-      key = digest(`${scope}|${req.ip}`);
+  function reserveAttempt(key: string, maximum: number, windowMs = 15 * 60_000) {
+    const now = Date.now();
     db.prepare('DELETE FROM login_limits WHERE resets_at <= ?').run(now);
-    const limit = db.prepare('SELECT attempts FROM login_limits WHERE limit_key=?').get(key) as
-      { attempts: number } | undefined;
-    if (limit && limit.attempts >= maximum)
-      throw new ApiError(429, 'Too many requests. Wait a little before trying again.');
     if (
-      !limit &&
+      !db.prepare('SELECT 1 FROM login_limits WHERE limit_key=?').get(key) &&
       (db.prepare('SELECT COUNT(*) AS n FROM login_limits').get() as { n: number }).n >= 5000
     )
       throw new ApiError(429, 'The service is busy. Try again shortly.');
-    db.prepare(
-      'INSERT INTO login_limits(limit_key,attempts,resets_at) VALUES(?,1,?) ON CONFLICT(limit_key) DO UPDATE SET attempts=attempts+1',
-    ).run(key, now + windowMs);
+    const reservation = db
+      .prepare(
+        `INSERT INTO login_limits(limit_key,attempts,resets_at) VALUES(?,1,?)
+         ON CONFLICT(limit_key) DO UPDATE SET attempts=attempts+1
+         WHERE attempts < ?
+         RETURNING resets_at`,
+      )
+      .get(key, now + windowMs, maximum) as { resets_at: number } | undefined;
+    return reservation?.resets_at;
+  }
+  function throttle(scope: string, req: Request, maximum: number, windowMs?: number) {
+    if (reserveAttempt(digest(`${scope}|${req.ip}`), maximum, windowMs) === undefined)
+      throw new ApiError(429, 'Too many requests. Wait a little before trying again.');
   }
 
   app.get('/api/health', (_req, res) => {
@@ -242,23 +249,16 @@ export async function createApp(options: Options) {
   app.post('/api/auth/login', async (req, res) => {
     throttle('login', req, 30);
     const input = credentials.parse(req.body),
-      key = digest(`${req.ip}|${input.email}`),
-      now = Date.now();
-    const limit = db
-      .prepare('SELECT attempts,resets_at FROM login_limits WHERE limit_key=?')
-      .get(key) as { attempts: number; resets_at: number } | undefined;
-    if (limit && limit.resets_at > now && limit.attempts >= 5)
+      key = digest(`${req.ip}|${input.email}`);
+    // Count in-flight checks so concurrent requests cannot pass the same available slot.
+    const resetsAt = reserveAttempt(key, 5);
+    if (resetsAt === undefined)
       throw new ApiError(429, 'Too many attempts. Try again in 15 minutes.');
     const row = db.prepare('SELECT * FROM users WHERE email=?').get(input.email) as
       (User & { password_hash: string }) | undefined;
-    const verified = await verifyPassword(input.password, row?.password_hash ?? dummyHash);
-    if (!row || !verified) {
-      db.prepare(
-        'INSERT INTO login_limits(limit_key,attempts,resets_at) VALUES(?,1,?) ON CONFLICT(limit_key) DO UPDATE SET attempts=CASE WHEN resets_at <= ? THEN 1 ELSE attempts+1 END,resets_at=CASE WHEN resets_at <= ? THEN excluded.resets_at ELSE resets_at END',
-      ).run(key, now + 15 * 60_000, now, now);
-      throw new ApiError(401, 'Email or password is incorrect.');
-    }
-    db.prepare('DELETE FROM login_limits WHERE limit_key=?').run(key);
+    const verified = await checkPassword(input.password, row?.password_hash ?? dummyHash);
+    if (!row || !verified) throw new ApiError(401, 'Email or password is incorrect.');
+    db.prepare('DELETE FROM login_limits WHERE limit_key=? AND resets_at=?').run(key, resetsAt);
     res.json(
       startSession(req, res, { id: row.id, name: row.name, email: row.email, role: row.role }),
     );

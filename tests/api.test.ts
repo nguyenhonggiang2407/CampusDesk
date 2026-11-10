@@ -7,11 +7,20 @@ import { existsSync, unlinkSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { openDatabase } from '../server/database.js';
 import { createApp } from '../server/app.js';
+import { verifyPassword } from '../server/password.js';
 import type { Session, TicketDetail, TicketPage } from '../shared/types.js';
 
 const origin = 'http://127.0.0.1:5173';
-async function fixture(t: Parameters<Parameters<typeof test>[1]>[0]) {
-  const service = await createApp({ databasePath: ':memory:', seedDemo: true, origin });
+async function fixture(
+  t: Parameters<Parameters<typeof test>[1]>[0],
+  passwordVerifier?: typeof verifyPassword,
+) {
+  const service = await createApp({
+    databasePath: ':memory:',
+    seedDemo: true,
+    origin,
+    passwordVerifier,
+  });
   const server = service.app.listen(0, '127.0.0.1');
   await new Promise<void>((resolve) => server.once('listening', resolve));
   const base = `http://127.0.0.1:${(server.address() as AddressInfo).port}`;
@@ -375,6 +384,54 @@ test('throttles bound signup, bad login and shared demo sessions; expired limits
     201,
   );
 });
+
+test(
+  'parallel wrong passwords exhaust the account limit before verification',
+  { timeout: 5000 },
+  async (t) => {
+    const fiveStarted = Promise.withResolvers<void>();
+    const overflowStarted = Promise.withResolvers<void>();
+    const finishChecks = Promise.withResolvers<boolean>();
+    let checks = 0;
+    const wrongPassword = 'incorrect test password';
+    const f = await fixture(t, async (password, hash) => {
+      if (password !== wrongPassword) return verifyPassword(password, hash);
+      checks += 1;
+      if (checks === 5) fiveStarted.resolve();
+      if (checks === 6) overflowStarted.resolve();
+      return finishChecks.promise;
+    });
+    const email = 'student@campus.example.test';
+    const attempt = () =>
+      f.client().request('/auth/login', 'POST', { email, password: wrongPassword });
+    const pending = Array.from({ length: 5 }, attempt);
+    try {
+      await fiveStarted.promise;
+      const extra = attempt();
+      pending.push(extra);
+      const status = await Promise.race([
+        extra.then((reply) => reply.status),
+        overflowStarted.promise.then(() => 'verification started'),
+      ]);
+      assert.equal(status, 429);
+    } finally {
+      finishChecks.resolve(false);
+      await Promise.all(pending);
+    }
+    const responses = await Promise.all(pending);
+    assert.deepEqual(
+      responses.map((reply) => reply.status),
+      [401, 401, 401, 401, 401, 429],
+    );
+    assert.equal(checks, 5);
+
+    f.db.prepare('UPDATE login_limits SET resets_at=0').run();
+    for (let i = 0; i < 4; i++) assert.equal((await attempt()).status, 401);
+    await f.client().login(email);
+    for (let i = 0; i < 5; i++) assert.equal((await attempt()).status, 401);
+    assert.equal((await attempt()).status, 429);
+  },
+);
 
 test('trusted staff provisioning creates a staff login and refuses to modify an existing account', (t) => {
   const path = resolve(`data/provision-test-${randomUUID()}.sqlite`);
