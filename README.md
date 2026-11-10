@@ -77,6 +77,18 @@ Database mẫu chỉ được tạo khi database đang trống, không đặt l�
 Các tài khoản này dùng để thử trên môi trường riêng.
 Đăng ký thông thường chỉ tạo tài khoản sinh viên.
 
+### Tài khoản demo cấu hình qua môi trường
+
+Trên môi trường demo riêng, đặt `DEMO_LOGIN_ENABLED=1`, `DEMO_SEED=0` và trỏ
+`DATABASE_PATH` đến một database dành riêng cho demo. Cấp `DEMO_LOGIN_EMAIL` và
+`DEMO_LOGIN_PASSWORD` qua biến môi trường hoặc kho bí mật của host, rồi khởi động ứng dụng.
+Mật khẩu của tài khoản demo cần dài 10–200 ký tự. Đăng nhập bằng biểu mẫu thông thường để xem yêu cầu mẫu
+trong tài khoản sinh viên. API giới hạn tài khoản này ở quyền sinh viên và các yêu cầu của chính mình.
+
+Khởi động lại giữ nguyên tài khoản và yêu cầu đã có. Cấu hình demo không đổi mật khẩu
+của email đã tồn tại và từ chối email đang thuộc nhân viên. Chỉ nhập dữ liệu hư cấu vì
+những người dùng chung tài khoản sẽ thấy cùng một workspace.
+
 ## Luồng xử lý
 
 1. Sinh viên gửi yêu cầu với nhóm dịch vụ, mức ưu tiên và nội dung.

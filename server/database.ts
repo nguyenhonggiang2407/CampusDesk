@@ -203,3 +203,47 @@ export async function seedDemo(db: DatabaseSync): Promise<void> {
     throw error;
   }
 }
+
+export async function seedDemoLogin(
+  db: DatabaseSync,
+  { email, password }: { email: string; password: string },
+): Promise<void> {
+  const existing = db.prepare('SELECT role FROM users WHERE email=?');
+  function accountExists() {
+    const account = existing.get(email);
+    if (account?.role === 'staff') throw new Error('The demo login cannot use a staff account.');
+    return account !== undefined;
+  }
+  if (accountExists()) return;
+  const passwordHash = await hashPassword(password);
+  db.exec('BEGIN IMMEDIATE');
+  try {
+    if (!accountExists()) {
+      const studentId = db
+        .prepare("INSERT INTO users(name,email,password_hash,role) VALUES(?,?,?,'student')")
+        .run('Demo Student', email, passwordHash).lastInsertRowid;
+      const id = randomUUID();
+      const time = new Date().toISOString();
+      const due = new Date(Date.now() + 5 * 86_400_000).toISOString().slice(0, 10);
+      db.prepare(
+        `INSERT INTO tickets(id,sequence,title,description,category,priority,status,student_id,due_date,created_at,updated_at)
+         VALUES(?,(SELECT COALESCE(MAX(sequence),1000)+1 FROM tickets),?,?,'it','normal','new',?,?,?,?)`,
+      ).run(
+        id,
+        'Library Wi-Fi help',
+        'Fictional sample request for the demo workspace.',
+        studentId,
+        due,
+        time,
+        time,
+      );
+      db.prepare(
+        'INSERT INTO ticket_events(ticket_id,actor_id,message,created_at) VALUES(?,?,?,?)',
+      ).run(id, studentId, 'Request submitted', time);
+    }
+    db.exec('COMMIT');
+  } catch (error) {
+    db.exec('ROLLBACK');
+    throw error;
+  }
+}
