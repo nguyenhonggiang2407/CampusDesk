@@ -25,15 +25,17 @@ tin cậy; không đưa mật khẩu vào mã nguồn hoặc tham số dòng l�
 `DEMO_SEED=0` chỉ tắt việc tạo dữ liệu mẫu, không xóa tài khoản mẫu đã tồn tại.
 Nếu chuyển từ bản thử sang dữ liệu thật, dùng một database mới cho môi trường thật.
 
-## Nâng v1 lên v2
+## Nâng schema lên v3
 
 Dừng tiến trình trước khi sao lưu volume và thay image.
-Khi mở database v1, ứng dụng tạo thêm các bảng thư viện trong một transaction, nâng `user_version`
-lên 2 và giữ nguyên dữ liệu hỗ trợ hiện có. Database có phiên bản mới hơn 2 bị từ chối mở;
-ứng dụng không tự hạ phiên bản. Database đã có tài khoản không bị chèn thêm hướng dẫn mẫu.
+Khi mở database v1 hoặc v2, ứng dụng bổ sung các bảng còn thiếu trong một transaction và nâng
+`user_version` lên 3. Bảng mới đánh dấu các tài khoản được tạo qua `DEMO_LOGIN_ENABLED=1`.
+Ứng dụng giữ nguyên dữ liệu hỗ trợ, tài khoản và phiên đăng nhập thông thường. Database có phiên
+bản mới hơn 3 bị từ chối mở. Database đã có tài khoản không bị chèn thêm hướng dẫn mẫu.
 
-Nâng schema chỉ có chiều tiến. Để quay lại bản v1, phục hồi cả bản sao database v1 trước khi
-chạy image cũ. Không dùng image v1 để mở database v2 đang sử dụng.
+Để chạy lại image cũ, phục hồi bản sao database tương ứng trước khi nâng cấp. Nếu từng chạy
+bản thử tài khoản cấu hình trước schema v3, hãy dùng database demo mới để khởi tạo lại. Phiên
+bản thử chưa lưu dấu hiệu để phân biệt tài khoản đó với sinh viên đã đăng ký.
 
 Sao lưu cả volume khi ứng dụng đã dừng, hoặc dùng SQLite backup API nếu sao lưu trực tiếp.
 Không sao chép riêng một file database đang có tiến trình ghi trong chế độ WAL.
