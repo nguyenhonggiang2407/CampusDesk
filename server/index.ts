@@ -1,7 +1,6 @@
 import { createApp } from './app.js';
 import { runtimeConfig } from './config.js';
-const config = runtimeConfig();
-const { port, host } = config;
+const { port, host, ...config } = runtimeConfig();
 const { app, close } = await createApp({
   ...config,
   serveClient: true,

@@ -3,7 +3,7 @@ import { createHash, randomBytes, randomUUID, timingSafeEqual } from 'node:crypt
 import { existsSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { z } from 'zod';
-import { openDatabase, seedDemo } from './database.js';
+import { openDatabase, seedDemo, seedDemoLogin } from './database.js';
 import { hashPassword, verifyPassword } from './password.js';
 import { ApiError } from './errors.js';
 import { registerKnowledge } from './knowledge-routes.js';
@@ -22,6 +22,7 @@ import {
 interface Options {
   databasePath: string;
   seedDemo?: boolean;
+  demoLogin?: Parameters<typeof seedDemoLogin>[1];
   origin: string;
   secureCookies?: boolean;
   serveClient?: boolean;
@@ -68,7 +69,22 @@ const patchTicket = z
 
 export async function createApp(options: Options) {
   const db = openDatabase(options.databasePath);
-  if (options.seedDemo) await seedDemo(db);
+  const demoEmail = options.demoLogin?.email ?? null;
+  try {
+    if (options.demoLogin) await seedDemoLogin(db, options.demoLogin);
+    else if (options.seedDemo) await seedDemo(db);
+    db.prepare(
+      `DELETE FROM sessions WHERE user_id IN (
+        SELECT u.id FROM demo_login_accounts d JOIN users u ON u.id=d.user_id
+        WHERE u.role <> 'student' OR u.email IS NOT ?
+      )`,
+    ).run(demoEmail);
+  } catch (error) {
+    db.close();
+    throw error;
+  }
+  const canAuthenticate = `(NOT EXISTS (SELECT 1 FROM demo_login_accounts d WHERE d.user_id=u.id)
+    OR (u.role='student' AND u.email=?))`;
   const app = express();
   app.disable('x-powered-by');
   const allowedOrigin = new URL(options.origin).origin;
@@ -101,9 +117,11 @@ export async function createApp(options: Options) {
       const tokenHash = digest(raw);
       const row = db
         .prepare(
-          'SELECT u.id,u.name,u.email,u.role,s.csrf_token,s.expires_at FROM sessions s JOIN users u ON u.id=s.user_id WHERE s.token_hash=?',
+          `SELECT u.id,u.name,u.email,u.role,s.csrf_token,s.expires_at
+           FROM sessions s JOIN users u ON u.id=s.user_id WHERE s.token_hash=? AND ${canAuthenticate}`,
         )
-        .get(tokenHash) as (User & { csrf_token: string; expires_at: number }) | undefined;
+        .get(tokenHash, demoEmail) as
+        (User & { csrf_token: string; expires_at: number }) | undefined;
       if (row && row.expires_at > Date.now())
         contexts.set(req, {
           user: { id: row.id, name: row.name, email: row.email, role: row.role },
@@ -249,8 +267,9 @@ export async function createApp(options: Options) {
       .get(key) as { attempts: number; resets_at: number } | undefined;
     if (limit && limit.resets_at > now && limit.attempts >= 5)
       throw new ApiError(429, 'Too many attempts. Try again in 15 minutes.');
-    const row = db.prepare('SELECT * FROM users WHERE email=?').get(input.email) as
-      (User & { password_hash: string }) | undefined;
+    const row = db
+      .prepare(`SELECT u.* FROM users u WHERE u.email=? AND ${canAuthenticate}`)
+      .get(input.email, demoEmail) as (User & { password_hash: string }) | undefined;
     const verified = await verifyPassword(input.password, row?.password_hash ?? dummyHash);
     if (!row || !verified) {
       db.prepare(

@@ -65,7 +65,7 @@ test('v1 upgrades preserve accounts, sessions, requests and private replies with
     db = openDatabase(path);
     assert.equal(
       (db.prepare('PRAGMA user_version').get() as { user_version: number }).user_version,
-      2,
+      3,
     );
     for (const table of ['users', 'sessions', 'tickets', 'comments'] as const)
       assert.deepEqual(
