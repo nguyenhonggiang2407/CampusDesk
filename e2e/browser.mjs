@@ -100,6 +100,44 @@ async function capture(page, name) {
   await page.evaluate(() => scrollTo(0, 0));
   await page.screenshot({ path: 'docs/screenshots/' + name + '.png', fullPage: true });
 }
+for (const { name, width, height, role, workspace } of [
+  { name: 'desktop', width: 1440, height: 900, role: 'Staff demo', workspace: /^Service queue/ },
+  { name: 'mobile', width: 390, height: 844, role: 'Student demo', workspace: /^My requests/ },
+]) {
+  test(`sign-in shows the local classroom photo and opens the ${name} demo`, async (t) => {
+    const context = await browser.newContext({ viewport: { width, height } });
+    t.after(() => context.close());
+    await context.route('**/*', (route) =>
+      route
+        .request()
+        .url()
+        .startsWith(base + '/')
+        ? route.continue()
+        : route.abort(),
+    );
+    const page = await context.newPage();
+    const photoResponse = page.waitForResponse(
+      (res) => res.url() === base + '/campus-classroom.webp',
+    );
+    await page.goto(base);
+    const image = page.getByRole('img', { name: /empty university classroom/i });
+    await expect(image).toBeVisible();
+    await image.evaluate((element) => element.decode());
+    assert.match((await photoResponse).headers()['content-type'], /image\/webp/);
+    assert.equal(await page.evaluate(() => document.documentElement.scrollWidth), width);
+    await page.screenshot({
+      path: `docs/screenshots/sign-in-${name}.jpg`,
+      fullPage: true,
+      quality: 86,
+    });
+    const selector = page.getByRole('button', { name: role, exact: true });
+    await selector.press('Enter');
+    await expect(selector).toHaveAttribute('aria-pressed', 'true');
+    await page.getByRole('button', { name: 'Enter workspace' }).click();
+    const nav = page.getByRole('navigation', { name: 'Main navigation' });
+    await expect(nav.getByRole('button', { name: workspace })).toBeVisible();
+  });
+}
 test(
   'staff publish a guide that students can read while source-like text remains literal',
   { timeout: 45000 },

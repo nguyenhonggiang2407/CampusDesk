@@ -22,7 +22,6 @@ import {
   Search,
   ShieldCheck,
   SlidersHorizontal,
-  Sparkles,
   Ticket as TicketIcon,
   Users,
   Wrench,
@@ -162,74 +161,56 @@ function Login({ onLogin }: { onLogin: (session: Session) => void }) {
       <section className="login-story">
         <Brand light />
         <div className="story-copy">
-          <span className="story-eyebrow">
-            <span />
-            YOUR CAMPUS, CONNECTED
-          </span>
-          <h1>
-            A little help.
-            <br />A better campus.
-          </h1>
+          <h1>Get help on campus.</h1>
           <p>
-            From a flickering light to a tricky login,
-            <br />
-            the right people are just a request away.
+            Report a classroom projector or campus Wi-Fi issue, then follow the response from the
+            support team.
           </p>
-          <div className="story-visual">
-            <div className="visual-orbit" />
-            <div className="visual-building">
-              <Building2 size={84} strokeWidth={1} />
-              <span>Here for your everyday</span>
-            </div>
-            <div className="floating-card floating-one">
-              <span className="mini-icon mint">
-                <Check size={19} />
-              </span>
-              <div>
-                Problem solved<small>One less thing to worry about</small>
-              </div>
-            </div>
-            <div className="floating-card floating-two">
-              <span className="mini-icon peach">
-                <MessageSquare size={19} />
-              </span>
-              <div>
-                People, not inboxes<small>Clear updates along the way</small>
-              </div>
-            </div>
-          </div>
-        </div>
-        <div className="story-footer">
-          <ShieldCheck size={17} />A thoughtful workspace for students and staff.
+          <figure className="story-photo">
+            <img
+              src="/campus-classroom.webp"
+              alt="An empty university classroom with desks, chairs, and tall windows"
+              width="1200"
+              height="800"
+              fetchPriority="high"
+            />
+            <figcaption>
+              Illustrative campus photo ·{' '}
+              <a href="https://unsplash.com/photos/j3eaegN9j_g">Nhan Hoang / Unsplash</a>
+            </figcaption>
+          </figure>
         </div>
       </section>
       <section className="login-form-area">
-        <span className="demo-label">
-          <Sparkles size={14} />
-          PORTFOLIO DEMO
-        </span>
         <div className="login-box">
-          <span className="eyebrow">LET'S GET YOU SETTLED</span>
-          <h2>{register ? 'Join your campus.' : 'Welcome back.'}</h2>
+          <h2>{register ? 'Create a student account' : 'Sign in to CampusDesk'}</h2>
           <p>
             {register
               ? 'Create a student account to submit your own requests.'
-              : 'Your next step starts right here.'}
+              : 'Use your account or select a demo workspace.'}
           </p>
           {!register && (
-            <div className="demo-tabs" aria-label="Choose a fictional demo account">
-              <button
-                className={role === 'student' ? 'active' : ''}
-                onClick={() => demo('student')}
-              >
-                <GraduationCap size={17} />
-                Student demo
-              </button>
-              <button className={role === 'staff' ? 'active' : ''} onClick={() => demo('staff')}>
-                <Wrench size={17} />
-                Staff demo
-              </button>
-            </div>
+            <>
+              <div className="demo-tabs" role="group" aria-label="Choose a fictional demo account">
+                <button
+                  type="button"
+                  aria-pressed={role === 'student'}
+                  onClick={() => demo('student')}
+                >
+                  <GraduationCap size={17} />
+                  Student demo
+                </button>
+                <button type="button" aria-pressed={role === 'staff'} onClick={() => demo('staff')}>
+                  <Wrench size={17} />
+                  Staff demo
+                </button>
+              </div>
+              <p className="demo-role-help" aria-live="polite">
+                {role === 'student'
+                  ? 'Submit a request and follow replies from campus support.'
+                  : 'Triage the queue, assign requests, and write internal notes.'}
+              </p>
+            </>
           )}
           <form onSubmit={submit}>
             {register && (
@@ -302,7 +283,6 @@ function Login({ onLogin }: { onLogin: (session: Session) => void }) {
             </p>
           </div>
         </div>
-        <span className="login-bottom">CAMPUSDESK · SUPPORT WITH A HUMAN TOUCH</span>
       </section>
     </main>
   );
