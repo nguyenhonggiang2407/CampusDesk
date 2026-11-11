@@ -292,23 +292,33 @@ small {
 }
 .login-layout {
   display: grid;
-  grid-template-columns: minmax(0, 1.14fr) minmax(0, 1fr);
+  grid-template:
+    'brand form' auto
+    'story form' 1fr / minmax(0, 1.14fr) minmax(0, 1fr);
   min-height: 100svh;
   background: #fff;
 }
+.login-brand,
 .login-story {
   background: #123b32;
   color: #fff;
-  padding: 38px clamp(32px, 5vw, 72px);
+  padding-inline: clamp(32px, 5vw, 72px);
+}
+.login-brand {
+  grid-area: brand;
+  padding-top: 38px;
+}
+.login-story {
+  grid-area: story;
   display: flex;
   flex-direction: column;
 }
 .story-copy {
   margin: auto 0;
-  padding: 48px 0 32px;
+  padding: 48px 0 56px;
   max-width: 740px;
 }
-.story-copy h1 {
+.story-copy h2 {
   font-size: clamp(34px, 4.1vw, 61px);
   line-height: 1.08;
   letter-spacing: -0.045em;
@@ -345,6 +355,7 @@ small {
   text-underline-offset: 3px;
 }
 .login-form-area {
+  grid-area: form;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -354,7 +365,7 @@ small {
   width: 396px;
   max-width: 100%;
 }
-.login-box h2 {
+.login-box h1 {
   font-size: clamp(25px, 2.8vw, 36px);
   letter-spacing: -1px;
   margin-bottom: 10px;
@@ -2275,15 +2286,25 @@ tbody tr:hover {
     font-size: 14px;
   }
   .login-layout {
-    grid-template-columns: minmax(0, 1fr);
+    grid-template:
+      'brand' auto
+      'form' auto
+      'story' 1fr / minmax(0, 1fr);
+  }
+  .login-brand {
+    padding: 16px clamp(18px, 6vw, 34px);
   }
   .login-story {
-    padding: 20px clamp(18px, 6vw, 34px) 18px;
+    padding: 22px clamp(18px, 6vw, 34px) 26px;
   }
   .story-copy {
-    padding: 22px 0 0;
+    width: 100%;
+    max-width: 420px;
+    margin-inline: auto;
+    padding: 0;
   }
-  .story-copy h1 {
+  .story-copy h2 {
+    font-size: clamp(24px, 5vw, 32px);
     margin-bottom: 8px;
   }
   .story-copy > p {
@@ -2297,10 +2318,13 @@ tbody tr:hover {
     aspect-ratio: auto;
   }
   .login-form-area {
-    padding: 30px clamp(18px, 6vw, 34px) 36px;
+    padding: 28px clamp(18px, 6vw, 34px);
   }
   .login-box {
     width: 420px;
+  }
+  .login-box input {
+    font-size: 16px;
   }
 }
 @media (max-width: 480px) {

@@ -158,32 +158,12 @@ function Login({ onLogin }: { onLogin: (session: Session) => void }) {
   }
   return (
     <main className="login-layout">
-      <section className="login-story">
+      <header className="login-brand">
         <Brand light />
-        <div className="story-copy">
-          <h1>Get help on campus.</h1>
-          <p>
-            Report a classroom projector or campus Wi-Fi issue, then follow the response from the
-            support team.
-          </p>
-          <figure className="story-photo">
-            <img
-              src="/campus-classroom.webp"
-              alt="An empty university classroom with desks, chairs, and tall windows"
-              width="1200"
-              height="800"
-              fetchPriority="high"
-            />
-            <figcaption>
-              Illustrative campus photo ·{' '}
-              <a href="https://unsplash.com/photos/j3eaegN9j_g">Nhan Hoang / Unsplash</a>
-            </figcaption>
-          </figure>
-        </div>
-      </section>
+      </header>
       <section className="login-form-area">
         <div className="login-box">
-          <h2>{register ? 'Create a student account' : 'Sign in to CampusDesk'}</h2>
+          <h1>{register ? 'Create a student account' : 'Sign in to CampusDesk'}</h1>
           <p>
             {register
               ? 'Create a student account to submit your own requests.'
@@ -282,6 +262,28 @@ function Login({ onLogin }: { onLogin: (session: Session) => void }) {
               project.
             </p>
           </div>
+        </div>
+      </section>
+      <section className="login-story" aria-labelledby="login-story-title">
+        <div className="story-copy">
+          <h2 id="login-story-title">Get help on campus.</h2>
+          <p>
+            Report a classroom projector or campus Wi-Fi issue, then follow the response from the
+            support team.
+          </p>
+          <figure className="story-photo">
+            <img
+              src="/campus-classroom.webp"
+              alt="An empty university classroom with desks, chairs, and tall windows"
+              width="1200"
+              height="800"
+              loading="lazy"
+            />
+            <figcaption>
+              Illustrative campus photo ·{' '}
+              <a href="https://unsplash.com/photos/j3eaegN9j_g">Nhan Hoang / Unsplash</a>
+            </figcaption>
+          </figure>
         </div>
       </section>
     </main>

@@ -120,11 +120,20 @@ for (const { name, width, height, role, workspace } of [
       (res) => res.url() === base + '/campus-classroom.webp',
     );
     await page.goto(base);
+    const enterWorkspace = page.getByRole('button', { name: 'Enter workspace' });
+    await expect(enterWorkspace).toBeInViewport({ ratio: 1 });
     const image = page.getByRole('img', { name: /empty university classroom/i });
+    if (name === 'mobile') {
+      const action = await enterWorkspace.boundingBox();
+      const photo = await image.boundingBox();
+      assert.ok(action && photo && action.y + action.height < photo.y);
+    }
+    await image.scrollIntoViewIfNeeded();
     await expect(image).toBeVisible();
     await image.evaluate((element) => element.decode());
     assert.match((await photoResponse).headers()['content-type'], /image\/webp/);
     assert.equal(await page.evaluate(() => document.documentElement.scrollWidth), width);
+    await page.evaluate(() => scrollTo(0, 0));
     await page.screenshot({
       path: `docs/screenshots/sign-in-${name}.jpg`,
       fullPage: true,
@@ -133,7 +142,7 @@ for (const { name, width, height, role, workspace } of [
     const selector = page.getByRole('button', { name: role, exact: true });
     await selector.press('Enter');
     await expect(selector).toHaveAttribute('aria-pressed', 'true');
-    await page.getByRole('button', { name: 'Enter workspace' }).click();
+    await enterWorkspace.click();
     const nav = page.getByRole('navigation', { name: 'Main navigation' });
     await expect(nav.getByRole('button', { name: workspace })).toBeVisible();
   });
