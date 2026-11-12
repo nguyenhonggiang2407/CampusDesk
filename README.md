@@ -8,6 +8,10 @@ Dự án dùng React, TypeScript, Express và SQLite. Dữ liệu mẫu là hư 
 
 ![Hàng đợi và tổng quan yêu cầu của sinh viên](docs/screenshots/desktop.jpg)
 
+[Màn hình đăng nhập trên máy tính](docs/screenshots/sign-in-desktop.jpg) ·
+[Màn hình đăng nhập trên điện thoại](docs/screenshots/sign-in-mobile.jpg) ·
+[Nguồn ảnh minh họa](docs/photo-credit.md)
+
 **[Mở bản demo](https://giang-campusdesk.onrender.com)** ·
 [Kiến trúc và dữ liệu](docs/architecture.md) ·
 [Triển khai](docs/deployment.md) ·
